@@ -116,6 +116,7 @@ if(BUILD_TESTING)
     endif()
   endfunction()
 
+  # shm needed
   function(custom_executable target)
     add_executable(${target} ${ARGN})
     rosidl_target_interfaces(${target}
@@ -549,3 +550,5 @@ if(BUILD_TESTING)
 endif()  # BUILD_TESTING
 
 ament_auto_package()
+
+add_subdirectory(test/shared_memory_cyclonedds)
