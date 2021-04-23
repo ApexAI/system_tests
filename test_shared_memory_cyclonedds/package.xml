@@ -1,18 +1,17 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format2.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="2">
-  <name>shared_memory_cyclonedds</name>
+  <name>test_shared_memory_cyclonedds</name>
   <version>0.1.0</version>
   <description>
     Test publish / subscribe and request / response communication with all primitive as well as builtin types.
-    Also exchange dynamic and static arrays and nested message structures.
+    Also exchange static arrays and nested message structures.
     Each test is run with every available rmw implementation for the sending as well as the receiving side.
   </description>
-  <maintainer email="j">J</maintainer>
-  <maintainer email="w">W</maintainer>
+  <maintainer email="foo@bar.com">Foo</maintainer>
   <license>Apache License 2.0</license>
 
-  <author email="d">D</author>
+  <author email="foo@bar.com">Foo</author>
 
   <build_depend>rosidl_default_generators</build_depend>
 

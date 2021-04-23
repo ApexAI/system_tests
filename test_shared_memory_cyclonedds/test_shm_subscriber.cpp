@@ -19,8 +19,8 @@
 
 #include "rclcpp/rclcpp.hpp"
 
-#include "test_msgs/message_fixtures.hpp"
-
+//#include "test_msgs/message_fixtures.hpp"
+#include "test_shared_memory_cyclonedds/message_fixtures.hpp"
 
 template<typename T>
 rclcpp::SubscriptionBase::SharedPtr subscribe(
@@ -83,57 +83,57 @@ int main(int argc, char ** argv)
   auto node = rclcpp::Node::make_shared(
     std::string("test_shm_subscriber_") + message, namespace_);
 
-  auto messages_empty = get_messages_empty();
-  auto messages_basic_types = get_messages_basic_types();
-  auto messages_arrays = get_messages_arrays();
-  auto messages_unbounded_sequences = get_messages_unbounded_sequences();
-  auto messages_bounded_sequences = get_messages_bounded_sequences();
-  auto messages_nested = get_messages_nested();
-  auto messages_multi_nested = get_messages_multi_nested();
-  auto messages_builtins = get_messages_builtins();
-  auto messages_constants = get_messages_constants();
-  auto messages_defaults = get_messages_defaults();
-  auto messages_strings = get_messages_strings();
-  auto messages_wstrings = get_messages_wstrings();
+  auto messages_empty = get_messages_uint32();
+  // auto messages_basic_types = get_messages_basic_types();
+  // auto messages_arrays = get_messages_arrays();
+  // auto messages_unbounded_sequences = get_messages_unbounded_sequences();
+  // auto messages_bounded_sequences = get_messages_bounded_sequences();
+  // auto messages_nested = get_messages_nested();
+  // auto messages_multi_nested = get_messages_multi_nested();
+  // auto messages_builtins = get_messages_builtins();
+  // auto messages_constants = get_messages_constants();
+  // auto messages_defaults = get_messages_defaults();
+  // auto messages_strings = get_messages_strings();
+  // auto messages_wstrings = get_messages_wstrings();
 
   rclcpp::SubscriptionBase::SharedPtr subscriber;
   std::vector<bool> received_messages;  // collect flags about received messages
-  if (message == "Empty") {
-    subscriber = subscribe<test_msgs::msg::Empty>(
+  if (message == "UInt32") {
+    subscriber = subscribe<test_shared_memory_cyclonedds::msg::UInt32>(
       node, message, messages_empty, received_messages);
-  } else if (message == "BasicTypes") {
-    subscriber = subscribe<test_msgs::msg::BasicTypes>(
-      node, message, messages_basic_types, received_messages);
-  } else if (message == "Arrays") {
-    subscriber = subscribe<test_msgs::msg::Arrays>(
-      node, message, messages_arrays, received_messages);
-  } else if (message == "UnboundedSequences") {
-    subscriber = subscribe<test_msgs::msg::UnboundedSequences>(
-      node, message, messages_unbounded_sequences, received_messages);
-  } else if (message == "BoundedSequences") {
-    subscriber = subscribe<test_msgs::msg::BoundedSequences>(
-      node, message, messages_bounded_sequences, received_messages);
-  } else if (message == "MultiNested") {
-    subscriber = subscribe<test_msgs::msg::MultiNested>(
-      node, message, messages_multi_nested, received_messages);
-  } else if (message == "Nested") {
-    subscriber = subscribe<test_msgs::msg::Nested>(
-      node, message, messages_nested, received_messages);
-  } else if (message == "Builtins") {
-    subscriber = subscribe<test_msgs::msg::Builtins>(
-      node, message, messages_builtins, received_messages);
-  } else if (message == "Constants") {
-    subscriber = subscribe<test_msgs::msg::Constants>(
-      node, message, messages_constants, received_messages);
-  } else if (message == "Defaults") {
-    subscriber = subscribe<test_msgs::msg::Defaults>(
-      node, message, messages_defaults, received_messages);
-  } else if (message == "Strings") {
-    subscriber = subscribe<test_msgs::msg::Strings>(
-      node, message, messages_strings, received_messages);
-  } else if (message == "WStrings") {
-    subscriber = subscribe<test_msgs::msg::WStrings>(
-      node, message, messages_wstrings, received_messages);
+  // } else if (message == "BasicTypes") {
+  //   subscriber = subscribe<test_msgs::msg::BasicTypes>(
+  //     node, message, messages_basic_types, received_messages);
+  // } else if (message == "Arrays") {
+  //   subscriber = subscribe<test_msgs::msg::Arrays>(
+  //     node, message, messages_arrays, received_messages);
+  // } else if (message == "UnboundedSequences") {
+  //   subscriber = subscribe<test_msgs::msg::UnboundedSequences>(
+  //     node, message, messages_unbounded_sequences, received_messages);
+  // } else if (message == "BoundedSequences") {
+  //   subscriber = subscribe<test_msgs::msg::BoundedSequences>(
+  //     node, message, messages_bounded_sequences, received_messages);
+  // } else if (message == "MultiNested") {
+  //   subscriber = subscribe<test_msgs::msg::MultiNested>(
+  //     node, message, messages_multi_nested, received_messages);
+  // } else if (message == "Nested") {
+  //   subscriber = subscribe<test_msgs::msg::Nested>(
+  //     node, message, messages_nested, received_messages);
+  // } else if (message == "Builtins") {
+  //   subscriber = subscribe<test_msgs::msg::Builtins>(
+  //     node, message, messages_builtins, received_messages);
+  // } else if (message == "Constants") {
+  //   subscriber = subscribe<test_msgs::msg::Constants>(
+  //     node, message, messages_constants, received_messages);
+  // } else if (message == "Defaults") {
+  //   subscriber = subscribe<test_msgs::msg::Defaults>(
+  //     node, message, messages_defaults, received_messages);
+  // } else if (message == "Strings") {
+  //   subscriber = subscribe<test_msgs::msg::Strings>(
+  //     node, message, messages_strings, received_messages);
+  // } else if (message == "WStrings") {
+  //   subscriber = subscribe<test_msgs::msg::WStrings>(
+  //     node, message, messages_wstrings, received_messages);
   } else {
     fprintf(stderr, "Unknown message argument '%s'\n", message.c_str());
     rclcpp::shutdown();

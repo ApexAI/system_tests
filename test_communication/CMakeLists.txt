@@ -550,4 +550,4 @@ endif()  # BUILD_TESTING
 
 ament_auto_package()
 
-add_subdirectory(test/shared_memory_cyclonedds)
+#add_subdirectory(test/shared_memory_cyclonedds)
