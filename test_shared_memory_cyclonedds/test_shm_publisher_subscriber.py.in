@@ -48,6 +48,19 @@ def generate_test_description(message_type):
         env=subscriber_env,
     )
 
+    colcon_prefix_path = os.environ.get('COLCON_PREFIX_PATH', '')
+    roudi_env = os.environ.copy()
+
+    ROUDI_PATH = os.path.join(
+        colcon_prefix_path,
+        'bin/',
+        'iox-roudi'
+    )
+    roudi_process = ExecuteProcess(
+        cmd=[sys.executable, ROUDI_PATH, '-l', 'debug'],
+        env=roudi_env, output='screen'
+    )
+
     return LaunchDescription([
         # Always stop daemon to isolate tests.
         ExecuteProcess(
@@ -56,6 +69,7 @@ def generate_test_description(message_type):
             on_exit=[
                 publisher_process,
                 subscriber_process,
+                roudi_process,
                 launch_testing.actions.ReadyToTest()
             ]
         )
