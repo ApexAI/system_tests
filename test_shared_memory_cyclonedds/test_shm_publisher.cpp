@@ -1,3 +1,4 @@
+// Copyright 2021, Apex.AI Inc. All rights reserved.
 // Copyright 2015 Open Source Robotics Foundation, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,7 +19,6 @@
 
 #include "rclcpp/rclcpp.hpp"
 
-//#include "test_msgs/message_fixtures.hpp"
 #include "test_shared_memory_cyclonedds/message_fixtures.hpp"
 
 template<typename T>
@@ -60,47 +60,22 @@ int main(int argc, char ** argv)
 {
   if (argc != 3) {
     fprintf(stderr, "Wrong number of arguments, pass one message type\n");
-    return 1;
+    return EXIT_FAILURE;
   }
   rclcpp::init(argc, argv);
 
-  std::string message = argv[1];
-  std::string namespace_ = argv[2];
+  std::string message_type = argv[1];
+  std::string test_namespace = argv[2];
   auto node = rclcpp::Node::make_shared(
-    std::string("test_shm_publisher_") + message, namespace_);
+    std::string("test_shm_publisher_") + message_type, test_namespace);
 
-  if (message == "UInt32") {
-    publish<test_shared_memory_cyclonedds::msg::UInt32>(node, message, get_messages_uint32());
-  // } else if (message == "BasicTypes") {
-  //   publish<test_msgs::msg::BasicTypes>(node, message, get_messages_basic_types());
-  // } else if (message == "Arrays") {
-  //   publish<test_msgs::msg::Arrays>(
-  //     node, message, get_messages_arrays());
-  // } else if (message == "UnboundedSequences") {
-  //   publish<test_msgs::msg::UnboundedSequences>(
-  //     node, message, get_messages_unbounded_sequences());
-  // } else if (message == "BoundedSequences") {
-  //   publish<test_msgs::msg::BoundedSequences>(
-  //     node, message, get_messages_bounded_sequences());
-  // } else if (message == "MultiNested") {
-  //   publish<test_msgs::msg::MultiNested>(node, message, get_messages_multi_nested());
-  // } else if (message == "Nested") {
-  //   publish<test_msgs::msg::Nested>(node, message, get_messages_nested());
-  // } else if (message == "Builtins") {
-  //   publish<test_msgs::msg::Builtins>(node, message, get_messages_builtins());
-  // } else if (message == "Constants") {
-  //   publish<test_msgs::msg::Constants>(node, message, get_messages_constants());
-  // } else if (message == "Defaults") {
-  //   publish<test_msgs::msg::Defaults>(node, message, get_messages_defaults());
-  // } else if (message == "Strings") {
-  //   publish<test_msgs::msg::Strings>(node, message, get_messages_strings());
-  // } else if (message == "WStrings") {
-  //   publish<test_msgs::msg::WStrings>(node, message, get_messages_wstrings());
+  if (message_type == "UInt32") {
+    publish<test_shared_memory_cyclonedds::msg::UInt32>(node, message_type, create_messages_uint32());  
   } else {
-    fprintf(stderr, "Unknown message argument '%s'\n", message.c_str());
+    fprintf(stderr, "Unknown message argument '%s'\n", message_type.c_str());
     rclcpp::shutdown();
-    return 1;
+    return EXIT_FAILURE;
   }
   rclcpp::shutdown();
-  return 0;
+  return EXIT_SUCCESS;
 }
