@@ -49,16 +49,13 @@ def generate_test_description(message_type):
     )
 
     colcon_prefix_path = os.environ.get('COLCON_PREFIX_PATH', '')
-    roudi_env = os.environ.copy()
+    roudi_env = dict(os.environ)
 
-    ROUDI_PATH = os.path.join(
-        colcon_prefix_path,
-        'bin/',
-        'iox-roudi'
-    )
+    roudi_cmd = [colcon_prefix_path + '/iceoryx_posh/bin/' + 'iox-roudi']
+
     roudi_process = ExecuteProcess(
-        cmd=[sys.executable, ROUDI_PATH, '-l', 'debug'],
-        env=roudi_env, output='screen'
+        cmd=roudi_cmd,
+        env=roudi_env
     )
 
     return LaunchDescription([
