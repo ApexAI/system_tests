@@ -1,4 +1,6 @@
-﻿// Copyright 2021, Apex.AI Inc. All rights reserved.
+﻿// NOLINT: This file starts with a BOM since it contain non-ASCII characters
+//
+// Copyright 2021, Apex.AI Inc. All rights reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,8 +14,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef TEST_MSGS__SHM_MESSAGE_FIXTURES_HPP_
-#define TEST_MSGS__SHM_MESSAGE_FIXTURES_HPP_
+#ifndef TEST_SHARED_MEMORY_CYCLONEDDS__MESSAGE_FIXTURES_HPP_
+#define TEST_SHARED_MEMORY_CYCLONEDDS__MESSAGE_FIXTURES_HPP_
 
 #include <cassert>
 #include <limits>
@@ -34,4 +36,4 @@ create_messages_uint32()
   return messages;
 }
 
-#endif  // TEST_MSGS__SHM_MESSAGE_FIXTURES_HPP_
+#endif  // TEST_SHARED_MEMORY_CYCLONEDDS__MESSAGE_FIXTURES_HPP_
