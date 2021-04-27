@@ -70,7 +70,9 @@ int main(int argc, char ** argv)
     std::string("test_shm_publisher_") + message_type, test_namespace);
 
   if (message_type == "UInt32") {
-    publish<test_shared_memory_cyclonedds::msg::UInt32>(node, message_type, create_messages_uint32());  
+    publish<test_shared_memory_cyclonedds::msg::UInt32>(
+      node, message_type,
+      create_messages_uint32());
   } else {
     fprintf(stderr, "Unknown message argument '%s'\n", message_type.c_str());
     rclcpp::shutdown();

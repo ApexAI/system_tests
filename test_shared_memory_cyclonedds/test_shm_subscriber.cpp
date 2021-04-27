@@ -30,30 +30,33 @@ rclcpp::SubscriptionBase::SharedPtr subscribe(
   std::vector<bool> & received_messages_indicator)
 {
   auto callback =
-    [&expected_messages, &received_messages_indicator](const typename T::SharedPtr received_message) -> void
+    [&expected_messages, &received_messages_indicator]
+      (const typename T::SharedPtr received_message) -> void
     {
-      // find received message in vector of expected messages     
+      // find received message in vector of expected messages
       bool known_message = false;
       size_t index = 0;
       for (auto expected_message : expected_messages) {
-        if (*received_message == *expected_message) {         
+        if (*received_message == *expected_message) {
           printf("received message #%zu of %zu\n", index + 1, expected_messages.size());
           known_message = true;
 
-          // we may read the same message in another subscribe call depending on QoS (it may not be removed from cache)
+          // we may read the same message in another subscribe call depending on QoS
+          // (it may not be removed from cache)
           received_messages_indicator[index] = true;
           break;
-        }       
+        }
         ++index;
       }
       if (!known_message) {
         throw std::runtime_error("received message does not match any expected message");
-      }                  
+      }
 
-      // shutdown node when all expected messages have been received    
+      // shutdown node when all expected messages have been received
       for (auto indicator : received_messages_indicator) {
         if (!indicator) {
-          return; //message not received yet, continue
+          // message not received yet, continue
+          return;
         }
       }
 
@@ -89,7 +92,7 @@ int main(int argc, char ** argv)
   rclcpp::SubscriptionBase::SharedPtr subscriber;
   if (message_type == "UInt32") {
     subscriber = subscribe<test_shared_memory_cyclonedds::msg::UInt32>(
-      node, message_type, expected_messages, expected_messages_indicator); 
+      node, message_type, expected_messages, expected_messages_indicator);
   } else {
     fprintf(stderr, "Unknown message argument '%s'\n", message_type.c_str());
     rclcpp::shutdown();
