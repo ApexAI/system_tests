@@ -73,6 +73,14 @@ int main(int argc, char ** argv)
     publish<test_shared_memory_cyclonedds::msg::UInt32>(
       node, message_type,
       create_messages_uint32());
+  } else if(message_type == "FixedArray") {
+    publish<test_shared_memory_cyclonedds::msg::FixedArray>(
+      node, message_type,
+      create_messages_fixed_array());
+  } else if(message_type == "DynamicArray") {
+    publish<test_shared_memory_cyclonedds::msg::DynamicArray>(
+      node, message_type,
+      create_messages_dynamic_array());
   } else {
     fprintf(stderr, "Unknown message argument '%s'\n", message_type.c_str());
     rclcpp::shutdown();
