@@ -55,11 +55,14 @@ if(BUILD_TESTING)
   # endforeach()
 
   # add here more datatypes with fixed size
-  list(APPEND message_files "msg/UInt32.msg")
+  list(APPEND message_files 
+    "msg/UInt32.msg" 
+    "msg/FixedArray.msg"   
+  )
 
   set(other_message_files
-    #"msg/FieldsWithSameType.msg"
     "msg/UInt32.msg"
+    "msg/FixedArray.msg" 
   )
   rosidl_generate_interfaces(${PROJECT_NAME}
     ${other_message_files}

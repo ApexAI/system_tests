@@ -23,6 +23,7 @@
 #include <vector>
 
 #include "test_shared_memory_cyclonedds/msg/u_int32.hpp"
+#include "test_shared_memory_cyclonedds/msg/fixed_array.hpp"
 
 std::vector<test_shared_memory_cyclonedds::msg::UInt32::SharedPtr>
 create_messages_uint32()
@@ -31,6 +32,22 @@ create_messages_uint32()
   {
     auto msg = std::make_shared<test_shared_memory_cyclonedds::msg::UInt32>();
     msg->data = 73;
+    messages.push_back(msg);
+  }
+  return messages;
+}
+
+std::vector<test_shared_memory_cyclonedds::msg::FixedArray::SharedPtr>
+create_messages_fixed_array()
+{
+  using Msg = test_shared_memory_cyclonedds::msg::FixedArray;
+  std::vector<Msg::SharedPtr> messages;
+  {
+    auto msg = std::make_shared<Msg>();
+    msg->data[0];
+    for(uint32_t i=0; i<Msg::NUMVALUES; ++i) {
+      msg->data[i] = i + 42;
+    }
     messages.push_back(msg);
   }
   return messages;
