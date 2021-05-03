@@ -26,11 +26,12 @@ template<typename T>
 rclcpp::SubscriptionBase::SharedPtr subscribe(
   rclcpp::Node::SharedPtr node,
   const std::string & message_type,
-  std::vector<typename T::SharedPtr> & expected_messages,
+  std::vector<typename T::SharedPtr>& expected_messages,
   std::vector<bool> & received_messages_indicator)
 {
+  received_messages_indicator = std::vector<bool>(expected_messages.size(), false);
   auto callback =
-    [&expected_messages, &received_messages_indicator]
+    [expected_messages, &received_messages_indicator]
       (const typename T::SharedPtr received_message) -> void
     {
       // find received message in vector of expected messages
@@ -86,13 +87,21 @@ int main(int argc, char ** argv)
   auto node = rclcpp::Node::make_shared(
     std::string("test_shm_subscriber_") + message_type, test_namespace);
 
-  auto expected_messages = create_messages_uint32();
-  std::vector<bool> expected_messages_indicator(expected_messages.size(), false);
+  std::vector<bool> received_messages_indicator; //must exist while the callback executes
 
   rclcpp::SubscriptionBase::SharedPtr subscriber;
   if (message_type == "UInt32") {
+    auto expected_messages = create_messages_uint32();
     subscriber = subscribe<test_shared_memory_cyclonedds::msg::UInt32>(
-      node, message_type, expected_messages, expected_messages_indicator);
+      node, message_type, expected_messages, received_messages_indicator);
+  } else if (message_type == "FixedArray") {
+    auto expected_messages = create_messages_fixed_array();
+    subscriber = subscribe<test_shared_memory_cyclonedds::msg::FixedArray>(
+      node, message_type, expected_messages, received_messages_indicator);
+  } else if (message_type == "DynamicArray") {
+    auto expected_messages = create_messages_dynamic_array();
+    subscriber = subscribe<test_shared_memory_cyclonedds::msg::DynamicArray>(
+      node, message_type, expected_messages, received_messages_indicator);
   } else {
     fprintf(stderr, "Unknown message argument '%s'\n", message_type.c_str());
     rclcpp::shutdown();
