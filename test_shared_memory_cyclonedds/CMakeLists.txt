@@ -54,21 +54,15 @@ if(BUILD_TESTING)
   #   endif()
   # endforeach()
 
-  # add here more datatypes with fixed size
+  # add datatypes to be used for testing
   list(APPEND message_files 
     "msg/UInt32.msg" 
     "msg/FixedArray.msg"
     "msg/DynamicArray.msg"    
   )
 
-  set(other_message_files
-    "msg/UInt32.msg"
-    "msg/FixedArray.msg"
-    "msg/DynamicArray.msg" 
-  )
-  
   rosidl_generate_interfaces(${PROJECT_NAME}
-    ${other_message_files}
+    ${message_files}
     SKIP_INSTALL
   )
 
