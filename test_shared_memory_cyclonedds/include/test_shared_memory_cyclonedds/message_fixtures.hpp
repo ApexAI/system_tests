@@ -25,6 +25,7 @@
 #include "test_shared_memory_cyclonedds/msg/u_int32.hpp"
 #include "test_shared_memory_cyclonedds/msg/fixed_array.hpp"
 #include "test_shared_memory_cyclonedds/msg/dynamic_array.hpp"
+#include "test_shared_memory_cyclonedds/msg/fixed_nested.hpp"
 
 std::vector<test_shared_memory_cyclonedds::msg::UInt32::SharedPtr>
 create_messages_uint32()
@@ -45,7 +46,7 @@ create_messages_fixed_array()
   std::vector<Msg::SharedPtr> messages;
   {
     auto msg = std::make_shared<Msg>();
-    for(uint32_t i=0; i<Msg::NUMVALUES; ++i) {
+    for (uint32_t i = 0; i < Msg::NUMVALUES; ++i) {
       msg->data[i] = i + 42;
     }
     messages.push_back(msg);
@@ -60,8 +61,24 @@ create_messages_dynamic_array()
   std::vector<Msg::SharedPtr> messages;
   {
     auto msg = std::make_shared<Msg>();
-    for(uint32_t i=0; i<10; ++i) {
+    for (uint32_t i = 0; i < 10; ++i) {
       msg->data.push_back(i + 73);
+    }
+    messages.push_back(msg);
+  }
+  return messages;
+}
+
+std::vector<test_shared_memory_cyclonedds::msg::FixedNested::SharedPtr>
+create_messages_fixed_nested()
+{
+  using Msg = test_shared_memory_cyclonedds::msg::FixedNested;
+  std::vector<Msg::SharedPtr> messages;
+  {
+    auto msg = std::make_shared<Msg>();
+    msg->value.data = 37;
+    for (uint32_t i = 0; i < 10; ++i) {
+      msg->array.data[i] = i + 73;
     }
     messages.push_back(msg);
   }

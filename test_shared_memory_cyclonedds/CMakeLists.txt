@@ -58,7 +58,8 @@ if(BUILD_TESTING)
   list(APPEND message_files 
     "msg/UInt32.msg" 
     "msg/FixedArray.msg"
-    "msg/DynamicArray.msg"    
+    "msg/DynamicArray.msg"
+    "msg/FixedNested.msg"       
   )
 
   rosidl_generate_interfaces(${PROJECT_NAME}
