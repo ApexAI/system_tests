@@ -13,23 +13,23 @@ import launch_testing.actions
 
 import unittest
 
-os.environ["CYCLONEDDS_URI"] = """
-<Domain id="any">
-    <SharedMemory>
-        <Enable>true</Enable>
-        <SubQueueCapacity>256</SubQueueCapacity>
-        <SubHistoryRequest>16</SubHistoryRequest>
-        <PubHistoryCapacity>16</PubHistoryCapacity>
-        <LogLevel>info</LogLevel>
-    </SharedMemory>
-</Domain>"""
-
 MESSAGE_TYPES = '@TEST_MESSAGE_TYPES@'.split(';')
 
 
 @launch_testing.parametrize('message_type', MESSAGE_TYPES)
 def generate_test_description(message_type):
     namespace = '/test_time_%s' % time.strftime('%H_%M_%S', time.gmtime())
+
+    os.environ["CYCLONEDDS_URI"] = """
+    <Domain id="any">
+        <SharedMemory>
+            <Enable>true</Enable>
+            <SubQueueCapacity>256</SubQueueCapacity>
+            <SubHistoryRequest>16</SubHistoryRequest>
+            <PubHistoryCapacity>16</PubHistoryCapacity>
+            <LogLevel>info</LogLevel>
+        </SharedMemory>
+    </Domain>"""
 
     launch_description = LaunchDescription()
 
