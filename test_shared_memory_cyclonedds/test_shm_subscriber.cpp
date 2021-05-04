@@ -102,6 +102,10 @@ int main(int argc, char ** argv)
     auto expected_messages = create_messages_dynamic_array();
     subscriber = subscribe<test_shared_memory_cyclonedds::msg::DynamicArray>(
       node, message_type, expected_messages, received_messages_indicator);
+  } else if (message_type == "FixedNested") {
+    auto expected_messages = create_messages_fixed_nested();
+    subscriber = subscribe<test_shared_memory_cyclonedds::msg::FixedNested>(
+      node, message_type, expected_messages, received_messages_indicator);
   } else {
     fprintf(stderr, "Unknown message argument '%s'\n", message_type.c_str());
     rclcpp::shutdown();
