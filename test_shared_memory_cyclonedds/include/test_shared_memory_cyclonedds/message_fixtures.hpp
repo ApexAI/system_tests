@@ -45,7 +45,7 @@ create_messages_fixed_array()
   std::vector<Msg::SharedPtr> messages;
   {
     auto msg = std::make_shared<Msg>();
-    for(uint32_t i=0; i<Msg::NUMVALUES; ++i) {
+    for (uint32_t i = 0; i < Msg::NUMVALUES; ++i) {
       msg->data[i] = i + 42;
     }
     messages.push_back(msg);
@@ -60,7 +60,7 @@ create_messages_dynamic_array()
   std::vector<Msg::SharedPtr> messages;
   {
     auto msg = std::make_shared<Msg>();
-    for(uint32_t i=0; i<10; ++i) {
+    for (uint32_t i = 0; i < 10; ++i) {
       msg->data.push_back(i + 73);
     }
     messages.push_back(msg);

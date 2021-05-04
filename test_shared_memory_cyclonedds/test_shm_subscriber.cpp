@@ -26,7 +26,8 @@ template<typename T>
 rclcpp::SubscriptionBase::SharedPtr subscribe(
   rclcpp::Node::SharedPtr node,
   const std::string & message_type,
-  std::vector<typename T::SharedPtr>& expected_messages,
+  const std::string & qos_type,
+  std::vector<typename T::SharedPtr> & expected_messages,
   std::vector<bool> & received_messages_indicator)
 {
   received_messages_indicator = std::vector<bool>(expected_messages.size(), false);
@@ -65,7 +66,20 @@ rclcpp::SubscriptionBase::SharedPtr subscribe(
       rclcpp::shutdown();
     };
 
+  // default QOS policy is KeepLast
   auto qos = rclcpp::QoS(rclcpp::KeepLast(expected_messages.size()));
+
+  if (qos_type == "qos_keepall_besteffort_transientlocal") {
+    qos = rclcpp::QoS(rclcpp::KeepAll());
+    qos.reliability(rclcpp::ReliabilityPolicy::Reliable);
+    qos.durability(rclcpp::DurabilityPolicy::TransientLocal);
+  } else if (qos_type == "qos_keeplast_reliable_transientlocal") {
+    qos.reliability(rclcpp::ReliabilityPolicy::Reliable);
+    qos.durability(rclcpp::DurabilityPolicy::TransientLocal);
+  } else if (qos_type == "qos_keeplast_besteffort_volatile") {
+    qos.reliability(rclcpp::ReliabilityPolicy::Reliable);
+    qos.durability(rclcpp::DurabilityPolicy::Volatile);
+  }
 
   auto subscriber =
     node->create_subscription<T>(std::string("test/message/") + message_type, qos, callback);
@@ -74,7 +88,7 @@ rclcpp::SubscriptionBase::SharedPtr subscribe(
 
 int main(int argc, char ** argv)
 {
-  if (argc != 3) {
+  if (argc != 4) {
     fprintf(stderr, "Wrong number of arguments, pass one message type\n");
     return EXIT_FAILURE;
   }
@@ -83,25 +97,27 @@ int main(int argc, char ** argv)
   auto start = std::chrono::steady_clock::now();
 
   std::string message_type = argv[1];
-  std::string test_namespace = argv[2];
+  std::string qos_type = argv[2];
+  std::string test_namespace = argv[3];
   auto node = rclcpp::Node::make_shared(
     std::string("test_shm_subscriber_") + message_type, test_namespace);
 
-  std::vector<bool> received_messages_indicator; //must exist while the callback executes
+  // must exist while the callback executes
+  std::vector<bool> received_messages_indicator;
 
   rclcpp::SubscriptionBase::SharedPtr subscriber;
   if (message_type == "UInt32") {
     auto expected_messages = create_messages_uint32();
     subscriber = subscribe<test_shared_memory_cyclonedds::msg::UInt32>(
-      node, message_type, expected_messages, received_messages_indicator);
+      node, message_type, qos_type, expected_messages, received_messages_indicator);
   } else if (message_type == "FixedArray") {
     auto expected_messages = create_messages_fixed_array();
     subscriber = subscribe<test_shared_memory_cyclonedds::msg::FixedArray>(
-      node, message_type, expected_messages, received_messages_indicator);
+      node, message_type, qos_type, expected_messages, received_messages_indicator);
   } else if (message_type == "DynamicArray") {
     auto expected_messages = create_messages_dynamic_array();
     subscriber = subscribe<test_shared_memory_cyclonedds::msg::DynamicArray>(
-      node, message_type, expected_messages, received_messages_indicator);
+      node, message_type, qos_type, expected_messages, received_messages_indicator);
   } else {
     fprintf(stderr, "Unknown message argument '%s'\n", message_type.c_str());
     rclcpp::shutdown();
