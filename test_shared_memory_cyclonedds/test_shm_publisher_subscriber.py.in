@@ -3,6 +3,7 @@
 import os
 import sys
 import time
+import itertools
 
 from ament_index_python.packages import get_package_prefix
 from launch import LaunchDescription
@@ -13,27 +14,49 @@ import launch_testing.actions
 
 import unittest
 
-os.environ["CYCLONEDDS_URI"] = """
-<Domain id="any">
-    <SharedMemory>
-        <Enable>true</Enable>
-        <SubQueueCapacity>256</SubQueueCapacity>
-        <SubHistoryRequest>16</SubHistoryRequest>
-        <PubHistoryCapacity>16</PubHistoryCapacity>
-        <LogLevel>info</LogLevel>
-    </SharedMemory>
-</Domain>"""
+
 
 MESSAGE_TYPES = '@TEST_MESSAGE_TYPES@'.split(';')
+QOS_PROFILES = ['qos_default', 'qos_keepall_besteffort_transientlocal', 'qos_keeplast_reliable_transientlocal', 'qos_keeplast_besteffort_volatile']
+TEST_PARAMS = itertools.product(MESSAGE_TYPES, QOS_PROFILES)
 
+# QoS Parameters for the tests: (see https://docs.ros.org/en/galactic/Concepts/About-Quality-of-Service-Settings.html)
+# Default ROS 2 settings:
+#   - History: KeepLast(n)
+#   - Reliability: Reliable
+#   - Durability: Volatile
+# qos_keepall_besteffort_transientlocal:
+#   - History: KeepAll
+#   - Reliability: BestEffort
+#   - Durability: TransientLocal
+# qos_keeplast_reliable_transientlocal:
+#   - History: KeepLast(n)
+#   - Reliability: Reliable
+#   - Durability: TransientLocal
+# qos_keeplast_besteffort_volatile:
+#   - History: KeepLast(n)
+#   - Reliability: BestEffort
+#   - Durability: Volatile
 
-@launch_testing.parametrize('message_type', MESSAGE_TYPES)
-def generate_test_description(message_type):
+@launch_testing.parametrize('message_type,qos_type', TEST_PARAMS)
+def generate_test_description(message_type, qos_type):
+
     namespace = '/test_time_%s' % time.strftime('%H_%M_%S', time.gmtime())
+
+    os.environ["CYCLONEDDS_URI"] = """
+    <Domain id="any">
+        <SharedMemory>
+            <Enable>true</Enable>
+            <SubQueueCapacity>256</SubQueueCapacity>
+            <SubHistoryRequest>16</SubHistoryRequest>
+            <PubHistoryCapacity>16</PubHistoryCapacity>
+            <LogLevel>info</LogLevel>
+        </SharedMemory>
+    </Domain>"""
 
     launch_description = LaunchDescription()
 
-    publisher_cmd = ['@TEST_PUBLISHER_EXECUTABLE@', message_type, namespace]
+    publisher_cmd = ['@TEST_PUBLISHER_EXECUTABLE@', message_type, qos_type, namespace]
     publisher_env = dict(os.environ)
     if '@TEST_PUBLISHER_RCL@' == 'rclpy':
         publisher_cmd.insert(0, sys.executable)
@@ -46,7 +69,7 @@ def generate_test_description(message_type):
         env=publisher_env,
     )
 
-    subscriber_cmd = ['@TEST_SUBSCRIBER_EXECUTABLE@', message_type, namespace]
+    subscriber_cmd = ['@TEST_SUBSCRIBER_EXECUTABLE@', message_type, qos_type, namespace]
     subscriber_env = dict(os.environ)
     if '@TEST_SUBSCRIBER_RCL@' == 'rclpy':
         subscriber_cmd.insert(0, sys.executable)
@@ -106,4 +129,4 @@ class TestShmPublisherSubscriberAfterShutdown(unittest.TestCase):
             proc_info,
             process='test_publisher'
         )
-        del os.environ["CYCLONEDDS_URI"]
+        del os.environ['CYCLONEDDS_URI']
