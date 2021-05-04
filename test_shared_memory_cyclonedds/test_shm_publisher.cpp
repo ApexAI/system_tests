@@ -25,12 +25,26 @@ template<typename T>
 void publish(
   rclcpp::Node::SharedPtr node,
   const std::string & message_type,
+  const std::string & qos_type,
   std::vector<typename T::SharedPtr> messages,
   size_t number_of_cycles = 100)
 {
   auto start = std::chrono::steady_clock::now();
 
+  // default QOS policy is KeepLast
   auto qos = rclcpp::QoS(rclcpp::KeepLast(messages.size()));
+
+  if (qos_type == "qos_keepall_besteffort_transientlocal") {
+    qos = rclcpp::QoS(rclcpp::KeepAll());
+    qos.reliability(rclcpp::ReliabilityPolicy::Reliable);
+    qos.durability(rclcpp::DurabilityPolicy::TransientLocal);
+  } else if (qos_type == "qos_keeplast_reliable_transientlocal") {
+    qos.reliability(rclcpp::ReliabilityPolicy::Reliable);
+    qos.durability(rclcpp::DurabilityPolicy::TransientLocal);
+  } else if (qos_type == "qos_keeplast_besteffort_volatile") {
+    qos.reliability(rclcpp::ReliabilityPolicy::Reliable);
+    qos.durability(rclcpp::DurabilityPolicy::Volatile);
+  }
 
   auto publisher = node->create_publisher<T>(std::string("test/message/") + message_type, qos);
 
@@ -58,28 +72,29 @@ void publish(
 
 int main(int argc, char ** argv)
 {
-  if (argc != 3) {
+  if (argc != 4) {
     fprintf(stderr, "Wrong number of arguments, pass one message type\n");
     return EXIT_FAILURE;
   }
   rclcpp::init(argc, argv);
 
   std::string message_type = argv[1];
-  std::string test_namespace = argv[2];
+  std::string qos_type = argv[2];
+  std::string test_namespace = argv[3];
   auto node = rclcpp::Node::make_shared(
     std::string("test_shm_publisher_") + message_type, test_namespace);
 
   if (message_type == "UInt32") {
     publish<test_shared_memory_cyclonedds::msg::UInt32>(
-      node, message_type,
+      node, message_type, qos_type,
       create_messages_uint32());
-  } else if(message_type == "FixedArray") {
+  } else if (message_type == "FixedArray") {
     publish<test_shared_memory_cyclonedds::msg::FixedArray>(
-      node, message_type,
+      node, message_type, qos_type,
       create_messages_fixed_array());
-  } else if(message_type == "DynamicArray") {
+  } else if (message_type == "DynamicArray") {
     publish<test_shared_memory_cyclonedds::msg::DynamicArray>(
-      node, message_type,
+      node, message_type, qos_type,
       create_messages_dynamic_array());
   } else if(message_type == "FixedNested") {
     publish<test_shared_memory_cyclonedds::msg::FixedNested>(

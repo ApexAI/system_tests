@@ -55,8 +55,8 @@ if(BUILD_TESTING)
   # endforeach()
 
   # add datatypes to be used for testing
-  list(APPEND message_files 
-    "msg/UInt32.msg" 
+  list(APPEND message_files
+    "msg/UInt32.msg"
     "msg/FixedArray.msg"
     "msg/DynamicArray.msg"
     "msg/FixedNested.msg"       
