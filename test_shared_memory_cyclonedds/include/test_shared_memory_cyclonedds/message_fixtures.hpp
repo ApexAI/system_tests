@@ -77,8 +77,8 @@ create_messages_fixed_nested()
   {
     auto msg = std::make_shared<Msg>();
     msg->value.data = 37;
-    for (uint32_t i = 0; i < 10; ++i) {
-      msg->array.data[i] = i + 73;
+    for (uint32_t i = 0; i < 4; ++i) {
+      msg->array.data[i] = i + 1;
     }
     messages.push_back(msg);
   }
