@@ -19,6 +19,7 @@
 #include <vector>
 
 #include "rclcpp/rclcpp.hpp"
+#include "rclcpp/serialization.hpp"
 
 #include "test_shared_memory_cyclonedds/message_fixtures.hpp"
 
@@ -57,12 +58,16 @@ void publish(
     size_t message_index = 0;
     // publish all messages one by one, shorter sleep between each message
     while (rclcpp::ok() && message_index < messages.size()) {
-      auto loaned_msg = publisher->borrow_loaned_message();
-      auto msg_data = messages[message_index];
-      loaned_msg.get() = *msg_data;
+      auto pod_msg_data = messages[message_index];
+      // serialize the message
+      rclcpp::SerializedMessage serialized_msg_;
+      auto message_header_length = 8u;
+      serialized_msg_.reserve(message_header_length + sizeof(pod_msg->data));
 
-      printf("publishing message #%zu\n", message_index + 1);
-      publisher->publish(std::move(loaned_msg));
+      static rclcpp::Serialization<T> serializer;
+      serializer.serialize_message(pod_msg.get(), &serialized_msg_);
+
+      publisher->publish(serialized_msg_);
       ++message_index;
       message_rate.sleep();
     }
