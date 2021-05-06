@@ -267,6 +267,34 @@ if(BUILD_TESTING)
       )
     endif()
 
+    ## serialized API tests
+    configure_file(
+      test_shm_serialized_publisher_subscriber.py.in
+      test_shm_serialized_publisher_subscriber${suffix}.py.configured
+      @ONLY
+    )
+    file(GENERATE
+      OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/test_shm_serialized_publisher_subscriber${suffix}_$<CONFIG>.py"
+      INPUT "${CMAKE_CURRENT_BINARY_DIR}/test_shm_serialized_publisher_subscriber${suffix}.py.configured"
+    )
+
+    list(LENGTH TEST_MESSAGE_TYPES length)
+    math(EXPR timeout "${length} * 15")
+    add_launch_test(
+      "${CMAKE_CURRENT_BINARY_DIR}/test_shm_serialized_publisher_subscriber${suffix}_$<CONFIG>.py"
+      TARGET test_shm_serialized_publisher_subscriber${suffix}
+      PYTHON_EXECUTABLE "${_PYTHON_EXECUTABLE}"
+      APPEND_LIBRARY_DIRS "${append_library_dirs}"
+      TIMEOUT ${timeout}
+      ${SKIP_TEST})
+    if(TEST test_shm_serialized_publisher_subscriber${suffix})
+      set_tests_properties(
+        test_shm_serialized_publisher_subscriber${suffix}
+        PROPERTIES DEPENDS "test_shm_serialized_publisher_cpp__${rmw_implementation1};\
+                            test_shm_serialized_subscriber_cpp__${rmw_implementation2}"
+      )
+    endif()
+
 
   endmacro()
 
@@ -296,12 +324,14 @@ if(BUILD_TESTING)
     elseif(_client_library1 STREQUAL "rclcpp")
       set(TEST_PUBLISHER_EXECUTABLE "$<TARGET_FILE:test_shm_publisher_cpp>")
       set(TEST_LOAN_PUBLISHER_EXECUTABLE "$<TARGET_FILE:test_shm_loan_publisher_cpp>")
+      set(TEST_SER_PUBLISHER_EXECUTABLE "$<TARGET_FILE:test_shm_serialized_publisher_cpp>")
     endif()
 
     if(_client_library2 STREQUAL "rclpy")
       #set(TEST_SUBSCRIBER_EXECUTABLE "${CMAKE_CURRENT_SOURCE_DIR}/test/subscriber_py.py")
     elseif(_client_library2 STREQUAL "rclcpp")
       set(TEST_SUBSCRIBER_EXECUTABLE "$<TARGET_FILE:test_shm_subscriber_cpp>")
+      set(TEST_SER_SUBSCRIBER_EXECUTABLE "$<TARGET_FILE:test_shm_serialized_subscriber_cpp>")
     endif()
   endmacro()
 
@@ -330,6 +360,14 @@ if(BUILD_TESTING)
   custom_executable(test_shm_loan_publisher_cpp
     "test_shm_loan_publisher.cpp")
   target_include_directories(test_shm_loan_publisher_cpp PRIVATE
+    include)
+  custom_executable(test_shm_serialized_publisher_cpp
+    "test_shm_publisher.cpp")
+  target_include_directories(test_shm_serialized_publisher_cpp PRIVATE
+    include)
+  custom_executable(test_shm_serialized_subscriber_cpp
+    "test_shm_subscriber.cpp")
+  target_include_directories(test_shm_serialized_subscriber_cpp PRIVATE
     include)
 
   macro(targets)
