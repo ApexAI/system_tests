@@ -96,7 +96,7 @@ int main(int argc, char ** argv)
     publish<test_shared_memory_cyclonedds::msg::DynamicArray>(
       node, message_type, qos_type,
       create_messages_dynamic_array());
-  } else if(message_type == "FixedNested") {
+  } else if (message_type == "FixedNested") {
     publish<test_shared_memory_cyclonedds::msg::FixedNested>(
       node, message_type,
       create_messages_fixed_nested());

@@ -59,7 +59,7 @@ if(BUILD_TESTING)
     "msg/UInt32.msg"
     "msg/FixedArray.msg"
     "msg/DynamicArray.msg"
-    "msg/FixedNested.msg"       
+    "msg/FixedNested.msg"
   )
 
   rosidl_generate_interfaces(${PROJECT_NAME}

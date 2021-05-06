@@ -41,20 +41,23 @@ TEST_PARAMS = itertools.product(MESSAGE_TYPES, QOS_PROFILES)
 @launch_testing.parametrize('message_type,qos_type', TEST_PARAMS)
 def generate_test_description(message_type, qos_type):
 
-    namespace = '/test_time_%s' % time.strftime('%H_%M_%S', time.gmtime())
-
     os.environ["CYCLONEDDS_URI"] = """
-    <Domain id="any">
-        <Tracing><Category>config</Category>
-        <OutputFile>stdout</OutputFile></Tracing>
-        <SharedMemory>
-            <Enable>true</Enable>
-            <SubQueueCapacity>256</SubQueueCapacity>
-            <SubHistoryRequest>16</SubHistoryRequest>
-            <PubHistoryCapacity>16</PubHistoryCapacity>
-            <LogLevel>info</LogLevel>
-        </SharedMemory>
-    </Domain>"""
+      <?xml version="1.0" encoding="UTF-8" ?>
+      <CycloneDDS xmlns="https://cdds.io/config" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://cdds.io/config https://raw.githubusercontent.com/eclipse-cyclonedds/cyclonedds/iceoryx/etc/cyclonedds.xsd">
+          <Domain id="any">
+              <Tracing><Category>config</Category>
+              <OutputFile>stdout</OutputFile></Tracing>
+              <SharedMemory>
+                  <Enable>true</Enable>
+                  <SubQueueCapacity>256</SubQueueCapacity>
+                  <SubHistoryRequest>16</SubHistoryRequest>
+                  <PubHistoryCapacity>16</PubHistoryCapacity>
+                  <LogLevel>debug</LogLevel>
+              </SharedMemory>
+          </Domain>
+      </CycloneDDS>"""
+
+    namespace = '/test_time_%s' % time.strftime('%H_%M_%S', time.gmtime())
 
     launch_description = LaunchDescription()
 
@@ -92,7 +95,8 @@ def generate_test_description(message_type, qos_type):
 
     roudi_process = ExecuteProcess(
         cmd=roudi_cmd,
-        env=roudi_env
+        name='iox-roudi',
+        env=roudi_env,
     )
 
     return LaunchDescription([
@@ -101,9 +105,9 @@ def generate_test_description(message_type, qos_type):
             cmd=['ros2', 'daemon', 'stop'],
             name='daemon-stop',
             on_exit=[
+                roudi_process,
                 publisher_process,
                 subscriber_process,
-                roudi_process,
                 launch_testing.actions.ReadyToTest()
             ]
         )
@@ -131,4 +135,4 @@ class TestShmPublisherSubscriberAfterShutdown(unittest.TestCase):
             proc_info,
             process='test_publisher'
         )
-        del os.environ['CYCLONEDDS_URI']
+        del os.environ["CYCLONEDDS_URI"]
