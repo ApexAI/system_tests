@@ -58,16 +58,16 @@ void publish(
     size_t message_index = 0;
     // publish all messages one by one, shorter sleep between each message
     while (rclcpp::ok() && message_index < messages.size()) {
-      auto pod_msg_data = messages[message_index];
+      auto msg = messages[message_index];
       // serialize the message
-      rclcpp::SerializedMessage serialized_msg_;
+      rclcpp::SerializedMessage serialized_msg;
       auto message_header_length = 8u;
-      serialized_msg_.reserve(message_header_length + sizeof(pod_msg->data));
+      serialized_msg.reserve(message_header_length + sizeof(msg));
 
       static rclcpp::Serialization<T> serializer;
-      serializer.serialize_message(pod_msg.get(), &serialized_msg_);
+      serializer.serialize_message(msg.get(), &serialized_msg);
 
-      publisher->publish(serialized_msg_);
+      publisher->publish(serialized_msg);
       ++message_index;
       message_rate.sleep();
     }

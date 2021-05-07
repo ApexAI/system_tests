@@ -362,11 +362,11 @@ if(BUILD_TESTING)
   target_include_directories(test_shm_loan_publisher_cpp PRIVATE
     include)
   custom_executable(test_shm_serialized_publisher_cpp
-    "test_shm_publisher.cpp")
+    "test_shm_serialized_publisher.cpp")
   target_include_directories(test_shm_serialized_publisher_cpp PRIVATE
     include)
   custom_executable(test_shm_serialized_subscriber_cpp
-    "test_shm_subscriber.cpp")
+    "test_shm_serialized_subscriber.cpp")
   target_include_directories(test_shm_serialized_subscriber_cpp PRIVATE
     include)
 
