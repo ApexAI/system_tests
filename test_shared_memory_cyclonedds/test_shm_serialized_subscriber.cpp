@@ -38,17 +38,16 @@ rclcpp::SubscriptionBase::SharedPtr subscribe(
       (const std::shared_ptr<rclcpp::SerializedMessage> received_message) -> void
     {
       // deserialize message
-      using MessageT = T;
-      MessageT deserialized_msg;
-      auto serializer = rclcpp::Serialization<MessageT>();
+      T deserialized_msg;
+      auto serializer = rclcpp::Serialization<T>();
       serializer.deserialize_message(received_message.get(), &deserialized_msg);
 
       // find received message in vector of expected messages
       bool known_message = false;
       size_t index = 0;
       for (auto expected_message : expected_messages) {
-        if (*deserialized_msg == *expected_message) {
-          printf("received message #%zu of %zu\n", index + 1, expected_messages.size());
+        if (deserialized_msg == *expected_message) {
+          printf("received serialized message #%zu of %zu\n", index + 1, expected_messages.size());
           known_message = true;
 
           // we may read the same message in another subscribe call depending on QoS
