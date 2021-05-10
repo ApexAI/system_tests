@@ -23,6 +23,8 @@
 
 #include "test_shared_memory_cyclonedds/message_fixtures.hpp"
 
+constexpr uint32_t MESSAGE_HEADER_LENGTH = 8U;
+
 template<typename T>
 void publish(
   rclcpp::Node::SharedPtr node,
@@ -61,8 +63,7 @@ void publish(
       auto msg = messages[message_index];
       // serialize the message
       rclcpp::SerializedMessage serialized_msg;
-      auto message_header_length = 8u;
-      serialized_msg.reserve(message_header_length + sizeof(msg));
+      serialized_msg.reserve(MESSAGE_HEADER_LENGTH + sizeof(msg));
 
       static rclcpp::Serialization<T> serializer;
       serializer.serialize_message(msg.get(), &serialized_msg);
