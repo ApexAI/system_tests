@@ -36,6 +36,8 @@ if(BUILD_TESTING AND (CMAKE_SYSTEM_NAME MATCHES Linux OR CMAKE_SYSTEM_NAME MATCH
     "msg/FixedArray.msg"
     "msg/DynamicArray.msg"
     "msg/FixedNested.msg"
+    "msg/UnboundedString.msg"
+    "msg/BoundedString.msg"
   )
 
   rosidl_generate_interfaces(${PROJECT_NAME}
