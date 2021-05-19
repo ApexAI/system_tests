@@ -248,7 +248,8 @@ if(BUILD_TESTING AND (CMAKE_SYSTEM_NAME MATCHES Linux OR CMAKE_SYSTEM_NAME MATCH
     endif()
 
 
-    ## network tests
+    if(NETWORK_TESTING)
+         ## network tests
     configure_file(
       test/test_network_publisher.py.in
       test/test_network_publisher${suffix}.py.configured
@@ -300,7 +301,10 @@ if(BUILD_TESTING AND (CMAKE_SYSTEM_NAME MATCHES Linux OR CMAKE_SYSTEM_NAME MATCH
         test_network_subscriber${suffix}
         PROPERTIES DEPENDS "test_shm_subscriber_cpp__${rmw_implementation2}"
       )
+    endif() 
     endif()
+
+
 
 
   endmacro()
