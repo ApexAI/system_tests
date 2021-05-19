@@ -165,6 +165,8 @@ if(BUILD_TESTING AND (CMAKE_SYSTEM_NAME MATCHES Linux OR CMAKE_SYSTEM_NAME MATCH
       list(APPEND TEST_MESSAGE_TYPES "${message_type}")
     endforeach()
 
+  if(NOT NETWORK_TESTING)
+
     ## pub/sub API tests
     configure_file(
       test/test_shm_publisher_subscriber.py.in
@@ -248,8 +250,8 @@ if(BUILD_TESTING AND (CMAKE_SYSTEM_NAME MATCHES Linux OR CMAKE_SYSTEM_NAME MATCH
     endif()
 
 
-    if(NETWORK_TESTING)
-         ## network tests
+  else(NETWORK_TESTING)
+    ## network tests
     configure_file(
       test/test_network_publisher.py.in
       test/test_network_publisher${suffix}.py.configured
@@ -301,8 +303,8 @@ if(BUILD_TESTING AND (CMAKE_SYSTEM_NAME MATCHES Linux OR CMAKE_SYSTEM_NAME MATCH
         test_network_subscriber${suffix}
         PROPERTIES DEPENDS "test_shm_subscriber_cpp__${rmw_implementation2}"
       )
-    endif() 
     endif()
+  endif(NETWORK_TESTING)
 
 
 
