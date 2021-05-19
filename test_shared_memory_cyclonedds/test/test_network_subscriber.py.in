@@ -1,0 +1,125 @@
+# generated from test_communication/test/test_publisher_subscriber.py.in
+
+import os
+import sys
+import time
+import itertools
+
+from ament_index_python.packages import get_package_prefix
+from launch import LaunchDescription
+from launch.actions import ExecuteProcess
+
+import launch_testing
+import launch_testing.actions
+
+import unittest
+
+
+
+MESSAGE_TYPES = '@TEST_MESSAGE_TYPES@'.split(';')
+QOS_PROFILES = ['qos_default', 'qos_keepall_besteffort_transientlocal', 'qos_keeplast_reliable_transientlocal', 'qos_keeplast_besteffort_volatile']
+TEST_PARAMS = itertools.product(MESSAGE_TYPES, QOS_PROFILES)
+
+# QoS Parameters for the tests: (see https://docs.ros.org/en/galactic/Concepts/About-Quality-of-Service-Settings.html)
+# Default ROS 2 settings:
+#   - History: KeepLast(n)
+#   - Reliability: Reliable
+#   - Durability: Volatile
+# qos_keepall_besteffort_transientlocal:
+#   - History: KeepAll
+#   - Reliability: BestEffort
+#   - Durability: TransientLocal
+# qos_keeplast_reliable_transientlocal:
+#   - History: KeepLast(n)
+#   - Reliability: Reliable
+#   - Durability: TransientLocal
+# qos_keeplast_besteffort_volatile:
+#   - History: KeepLast(n)
+#   - Reliability: BestEffort
+#   - Durability: Volatile
+
+@launch_testing.parametrize('message_type,qos_type', TEST_PARAMS)
+def generate_test_description(message_type, qos_type):
+
+    os.environ["CYCLONEDDS_URI"] = """
+      <?xml version="1.0" encoding="UTF-8" ?>
+      <CycloneDDS xmlns="https://cdds.io/config" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://cdds.io/config https://raw.githubusercontent.com/eclipse-cyclonedds/cyclonedds/iceoryx/etc/cyclonedds.xsd">
+          <Domain id="any">
+              <Tracing><Category>config</Category>
+              <OutputFile>stdout</OutputFile></Tracing>
+              <SharedMemory>
+                  <Enable>true</Enable>
+                  <SubQueueCapacity>256</SubQueueCapacity>
+                  <SubHistoryRequest>16</SubHistoryRequest>
+                  <PubHistoryCapacity>16</PubHistoryCapacity>
+                  <LogLevel>debug</LogLevel>
+              </SharedMemory>
+          </Domain>
+      </CycloneDDS>"""
+
+    namespace = '/test_time_%s' % time.strftime('%H_%M_%S', time.gmtime())
+
+    launch_description = LaunchDescription()
+
+    subscriber_cmd = ['@TEST_SUBSCRIBER_EXECUTABLE@', message_type, qos_type, namespace]
+    subscriber_env = dict(os.environ)
+    if '@TEST_SUBSCRIBER_RCL@' == 'rclpy':
+        subscriber_cmd.insert(0, sys.executable)
+        subscriber_env['PYTHONUNBUFFERED'] = '1'
+    subscriber_env['RCL_ASSERT_RMW_ID_MATCHES'] = '@SUBSCRIBER_RMW@'
+    subscriber_env['RMW_IMPLEMENTATION'] = '@SUBSCRIBER_RMW@'
+    subscriber_process = ExecuteProcess(
+        cmd=subscriber_cmd,
+        name='test_subscriber',
+        env=subscriber_env,
+    )
+
+    # We take a little workaround here because iceoryx is not indexed in ament to get the path to roudi
+    rmw_cyclonedds_prefix_path = get_package_prefix("rmw_cyclonedds_cpp")
+    roudi_env = dict(os.environ)
+
+    roudi_cmd = [rmw_cyclonedds_prefix_path + '/../iceoryx_posh/bin/' + 'iox-roudi']
+
+    roudi_process = ExecuteProcess(
+        cmd=roudi_cmd,
+        name='iox-roudi',
+        env=roudi_env,
+    )
+
+    return LaunchDescription([
+        # Always stop daemon to isolate tests.
+        ExecuteProcess(
+            cmd=['ros2', 'daemon', 'stop'],
+            name='daemon-stop',
+            on_exit=[
+                roudi_process,
+                publisher_process,
+                subscriber_process,
+                launch_testing.actions.ReadyToTest()
+            ]
+        )
+    ]), locals()
+
+
+class TestShmPublisherSubscriber(unittest.TestCase):
+
+    def test_subscriber_terminates_in_a_finite_amount_of_time(self, proc_info, subscriber_process):
+        """Test that the subscriber terminates after a finite amount of time."""
+        proc_info.assertWaitForShutdown(process=subscriber_process, timeout=10)
+
+
+@launch_testing.post_shutdown_test()
+class TestShmPublisherSubscriberAfterShutdown(unittest.TestCase):
+
+    def test_processes_finished_gracefully(self, proc_info):
+        """Test that both executables finished gracefully."""
+        launch_testing.asserts.assertExitCodes(
+            proc_info,
+            [launch_testing.asserts.EXIT_OK],
+            'test_subscriber'
+        )
+        launch_testing.asserts.assertExitCodes(
+            proc_info,
+            process='test_publisher'
+        )
+        del os.environ["CYCLONEDDS_URI"]
