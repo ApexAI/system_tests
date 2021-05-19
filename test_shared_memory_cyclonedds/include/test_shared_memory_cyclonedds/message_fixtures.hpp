@@ -89,7 +89,7 @@ create_messages_unbounded_string() {
   std::vector<Msg::SharedPtr> messages;
   {
     auto msg = std::make_shared<Msg>();
-    msg->value.data = "Unbounded";
+    msg->data = "Unbounded";
     messages.push_back(msg);
   }
   return messages;
@@ -101,7 +101,7 @@ create_messages_bounded_string() {
   std::vector<Msg::SharedPtr> messages;
   {
     auto msg = std::make_shared<Msg>();
-    msg->value.data = "Bounded";
+    msg->data = "Bounded";
     messages.push_back(msg);
   }
   return messages;

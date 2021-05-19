@@ -105,19 +105,17 @@ int main(int argc, char ** argv)
     publish<test_shared_memory_cyclonedds::msg::FixedNested>(
       node, message_type, qos_type,
       create_messages_fixed_nested());
-    else if (message_type == "UnboundedString") {
-      publish<test_shared_memory_cyclonedds::msg::UnboundedString>(
-          node, message_type, qos_type, create_messages_unbounded_string());
-    }
-    else if (message_type == "BoundedString") {
-      publish<test_shared_memory_cyclonedds::msg::BoundedString>(
-          node, message_type, qos_type, create_messages_bounded_string());
-    }
-    else {
-      fprintf(stderr, "Unknown message argument '%s'\n", message_type.c_str());
-      rclcpp::shutdown();
-      return EXIT_FAILURE;
-    }
+  } else if (message_type == "UnboundedString") {
+    publish<test_shared_memory_cyclonedds::msg::UnboundedString>(
+        node, message_type, qos_type, create_messages_unbounded_string());
+  } else if (message_type == "BoundedString") {
+    publish<test_shared_memory_cyclonedds::msg::BoundedString>(
+        node, message_type, qos_type, create_messages_bounded_string());
+  } else {
+    fprintf(stderr, "Unknown message argument '%s'\n", message_type.c_str());
+    rclcpp::shutdown();
+    return EXIT_FAILURE;
+  }
   rclcpp::shutdown();
   return EXIT_SUCCESS;
 }
