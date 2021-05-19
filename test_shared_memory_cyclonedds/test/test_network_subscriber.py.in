@@ -93,7 +93,6 @@ def generate_test_description(message_type, qos_type):
             name='daemon-stop',
             on_exit=[
                 roudi_process,
-                publisher_process,
                 subscriber_process,
                 launch_testing.actions.ReadyToTest()
             ]
@@ -101,15 +100,15 @@ def generate_test_description(message_type, qos_type):
     ]), locals()
 
 
-class TestShmPublisherSubscriber(unittest.TestCase):
+class TestNetworkSubscriber(unittest.TestCase):
 
-    def test_subscriber_terminates_in_a_finite_amount_of_time(self, proc_info, subscriber_process):
+    def test_network_subscriber_terminates_in_a_finite_amount_of_time(self, proc_info, subscriber_process):
         """Test that the subscriber terminates after a finite amount of time."""
         proc_info.assertWaitForShutdown(process=subscriber_process, timeout=10)
 
 
 @launch_testing.post_shutdown_test()
-class TestShmPublisherSubscriberAfterShutdown(unittest.TestCase):
+class TestNetworkSubscriberAfterShutdown(unittest.TestCase):
 
     def test_processes_finished_gracefully(self, proc_info):
         """Test that both executables finished gracefully."""
@@ -117,9 +116,5 @@ class TestShmPublisherSubscriberAfterShutdown(unittest.TestCase):
             proc_info,
             [launch_testing.asserts.EXIT_OK],
             'test_subscriber'
-        )
-        launch_testing.asserts.assertExitCodes(
-            proc_info,
-            process='test_publisher'
         )
         del os.environ["CYCLONEDDS_URI"]
