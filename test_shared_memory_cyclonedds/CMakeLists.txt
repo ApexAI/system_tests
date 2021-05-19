@@ -9,11 +9,6 @@ endif()
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
-if(CMAKE_BUILD_TYPE STREQUAL "Debug" AND MSVC)
-  # /bigobj is needed to avoid error C1128:
-  #   https://msdn.microsoft.com/en-us/library/8578y171.aspx
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /bigobj")
-endif()
 
 option(SKIP_SINGLE_RMW_TESTS
   "Skip tests involving only a single RMW implementation" OFF)
@@ -23,7 +18,7 @@ option(SKIP_MULTI_RMW_TESTS
 find_package(ament_cmake_auto REQUIRED)
 ament_auto_find_build_dependencies()
 
-if(BUILD_TESTING)
+if(BUILD_TESTING AND (CMAKE_SYSTEM_NAME MATCHES Linux OR CMAKE_SYSTEM_NAME MATCHES Darwin))
   find_package(ament_cmake REQUIRED)
   find_package(test_msgs REQUIRED)
   find_package(osrf_testing_tools_cpp REQUIRED)
@@ -64,42 +59,6 @@ if(BUILD_TESTING)
     find_package("${rmw_implementation}" REQUIRED)
   endforeach()
 
-  function(custom_test target with_message_argument)
-    if(with_message_argument)
-      # adding test for each message type
-      foreach(message_file ${message_files})
-        get_filename_component(TEST_MESSAGE_TYPE "${message_file}" NAME_WE)
-        ament_add_test(
-          "${target}${target_suffix}__${TEST_MESSAGE_TYPE}"
-          COMMAND "$<TARGET_FILE:${target}>" "${TEST_MESSAGE_TYPE}"
-          TIMEOUT 15
-          GENERATE_RESULT_FOR_RETURN_CODE_ZERO
-          APPEND_LIBRARY_DIRS "${append_library_dirs}"
-          ENV
-          RCL_ASSERT_RMW_ID_MATCHES=${rmw_implementation}
-          RMW_IMPLEMENTATION=${rmw_implementation})
-        set_tests_properties(
-          "${target}${target_suffix}__${TEST_MESSAGE_TYPE}"
-          PROPERTIES REQUIRED_FILES "$<TARGET_FILE:${target}>"
-        )
-      endforeach()
-    else()
-      ament_add_test(
-        "${target}${target_suffix}"
-        COMMAND "$<TARGET_FILE:${target}>"
-        TIMEOUT 15
-        GENERATE_RESULT_FOR_RETURN_CODE_ZERO
-        APPEND_LIBRARY_DIRS "${append_library_dirs}"
-        ENV
-        RCL_ASSERT_RMW_ID_MATCHES=${rmw_implementation}
-        RMW_IMPLEMENTATION=${rmw_implementation})
-      set_tests_properties(
-        "${target}${target_suffix}"
-        PROPERTIES REQUIRED_FILES "$<TARGET_FILE:${target}>"
-      )
-    endif()
-  endfunction()
-
   # shm needed
   function(custom_executable target)
     add_executable(${target} ${ARGN})
@@ -113,9 +72,6 @@ if(BUILD_TESTING)
 
 
   set(append_library_dirs "${CMAKE_CURRENT_BINARY_DIR}")
-  if(WIN32)
-    set(append_library_dirs "${append_library_dirs}/$<CONFIG>")
-  endif()
 
   macro(multi_targets)
     # test publish / subscribe messages
@@ -135,12 +91,6 @@ if(BUILD_TESTING)
     endif()
     if(rmw_implementation2 MATCHES "(.*)fastrtps(.*)")
       set(rmw_implementation2_is_fastrtps TRUE)
-    endif()
-    if(
-      WIN32 AND
-      NOT "${rmw_implementation1_is_fastrtps}" STREQUAL "${rmw_implementation2_is_fastrtps}"
-    )
-      set(SKIP_TEST "SKIP_TEST")
     endif()
 
     set(rmw_implementation1_is_connext FALSE)
@@ -215,19 +165,19 @@ if(BUILD_TESTING)
       list(APPEND TEST_MESSAGE_TYPES "${message_type}")
     endforeach()
     configure_file(
-      test_shm_publisher_subscriber.py.in
-      test_shm_publisher_subscriber${suffix}.py.configured
+      test/test_shm_publisher_subscriber.py.in
+      test/test_shm_publisher_subscriber${suffix}.py.configured
       @ONLY
     )
     file(GENERATE
-      OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/test_shm_publisher_subscriber${suffix}_$<CONFIG>.py"
-      INPUT "${CMAKE_CURRENT_BINARY_DIR}/test_shm_publisher_subscriber${suffix}.py.configured"
+      OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/test/test_shm_publisher_subscriber${suffix}_$<CONFIG>.py"
+      INPUT "${CMAKE_CURRENT_BINARY_DIR}/test/test_shm_publisher_subscriber${suffix}.py.configured"
     )
 
     list(LENGTH TEST_MESSAGE_TYPES length)
     math(EXPR timeout "${length} * 15")
     add_launch_test(
-      "${CMAKE_CURRENT_BINARY_DIR}/test_shm_publisher_subscriber${suffix}_$<CONFIG>.py"
+      "${CMAKE_CURRENT_BINARY_DIR}/test/test_shm_publisher_subscriber${suffix}_$<CONFIG>.py"
       TARGET test_shm_publisher_subscriber${suffix}
       PYTHON_EXECUTABLE "${_PYTHON_EXECUTABLE}"
       APPEND_LIBRARY_DIRS "${append_library_dirs}"
@@ -242,19 +192,19 @@ if(BUILD_TESTING)
 
     ## loan API tests
     configure_file(
-      test_shm_loan_publisher_subscriber.py.in
-      test_shm_loan_publisher_subscriber${suffix}.py.configured
+      test/test_shm_loan_publisher_subscriber.py.in
+      test/test_shm_loan_publisher_subscriber${suffix}.py.configured
       @ONLY
     )
     file(GENERATE
-      OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/test_shm_loan_publisher_subscriber${suffix}_$<CONFIG>.py"
-      INPUT "${CMAKE_CURRENT_BINARY_DIR}/test_shm_loan_publisher_subscriber${suffix}.py.configured"
+      OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/test/test_shm_loan_publisher_subscriber${suffix}_$<CONFIG>.py"
+      INPUT "${CMAKE_CURRENT_BINARY_DIR}/test/test_shm_loan_publisher_subscriber${suffix}.py.configured"
     )
 
     list(LENGTH TEST_MESSAGE_TYPES length)
     math(EXPR timeout "${length} * 15")
     add_launch_test(
-      "${CMAKE_CURRENT_BINARY_DIR}/test_shm_loan_publisher_subscriber${suffix}_$<CONFIG>.py"
+      "${CMAKE_CURRENT_BINARY_DIR}/test/test_shm_loan_publisher_subscriber${suffix}_$<CONFIG>.py"
       TARGET test_shm_loan_publisher_subscriber${suffix}
       PYTHON_EXECUTABLE "${_PYTHON_EXECUTABLE}"
       APPEND_LIBRARY_DIRS "${append_library_dirs}"
@@ -269,19 +219,19 @@ if(BUILD_TESTING)
 
     ## serialized API tests
     configure_file(
-      test_shm_serialized_publisher_subscriber.py.in
-      test_shm_serialized_publisher_subscriber${suffix}.py.configured
+      test/test_shm_serialized_publisher_subscriber.py.in
+      test/test_shm_serialized_publisher_subscriber${suffix}.py.configured
       @ONLY
     )
     file(GENERATE
-      OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/test_shm_serialized_publisher_subscriber${suffix}_$<CONFIG>.py"
-      INPUT "${CMAKE_CURRENT_BINARY_DIR}/test_shm_serialized_publisher_subscriber${suffix}.py.configured"
+      OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/test/test_shm_serialized_publisher_subscriber${suffix}_$<CONFIG>.py"
+      INPUT "${CMAKE_CURRENT_BINARY_DIR}/test/test_shm_serialized_publisher_subscriber${suffix}.py.configured"
     )
 
     list(LENGTH TEST_MESSAGE_TYPES length)
     math(EXPR timeout "${length} * 15")
     add_launch_test(
-      "${CMAKE_CURRENT_BINARY_DIR}/test_shm_serialized_publisher_subscriber${suffix}_$<CONFIG>.py"
+      "${CMAKE_CURRENT_BINARY_DIR}/test/test_shm_serialized_publisher_subscriber${suffix}_$<CONFIG>.py"
       TARGET test_shm_serialized_publisher_subscriber${suffix}
       PYTHON_EXECUTABLE "${_PYTHON_EXECUTABLE}"
       APPEND_LIBRARY_DIRS "${append_library_dirs}"
@@ -310,14 +260,6 @@ if(BUILD_TESTING)
     else()
       set(suffix "__${_client_library1}__${_client_library2}")
     endif()
-
-    # if(_client_library1 STREQUAL "rclpy" OR _client_library2 STREQUAL "rclpy")
-    #   if(WIN32)
-    #     if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-    #       set(_PYTHON_EXECUTABLE "${PYTHON_EXECUTABLE_DEBUG}")
-    #     endif()
-    #   endif()
-    # endif()
 
     if(_client_library1 STREQUAL "rclpy")
       #set(TEST_PUBLISHER_EXECUTABLE "${CMAKE_CURRENT_SOURCE_DIR}/test/publisher_py.py")
@@ -350,36 +292,25 @@ if(BUILD_TESTING)
   endmacro()
 
   custom_executable(test_shm_publisher_cpp
-    "test_shm_publisher.cpp")
+    "test/test_shm_publisher.cpp")
   target_include_directories(test_shm_publisher_cpp PRIVATE
     include)
   custom_executable(test_shm_subscriber_cpp
-    "test_shm_subscriber.cpp")
+    "test/test_shm_subscriber.cpp")
   target_include_directories(test_shm_subscriber_cpp PRIVATE
     include)
   custom_executable(test_shm_loan_publisher_cpp
-    "test_shm_loan_publisher.cpp")
+    "test/test_shm_loan_publisher.cpp")
   target_include_directories(test_shm_loan_publisher_cpp PRIVATE
     include)
   custom_executable(test_shm_serialized_publisher_cpp
-    "test_shm_serialized_publisher.cpp")
+    "test/test_shm_serialized_publisher.cpp")
   target_include_directories(test_shm_serialized_publisher_cpp PRIVATE
     include)
   custom_executable(test_shm_serialized_subscriber_cpp
-    "test_shm_serialized_subscriber.cpp")
+    "test/test_shm_serialized_subscriber.cpp")
   target_include_directories(test_shm_serialized_subscriber_cpp PRIVATE
     include)
-
-  macro(targets)
-    if(NOT SKIP_SINGLE_RMW_TESTS)
-    #   custom_test_c(test_messages_c
-    #     "test/test_messages_c.cpp")
-
-    #   # publisher combined with a subscriber
-        # custom_test(test_publisher_subscriber_cpp TRUE)
-    #   # subcription valid data
-    #   custom_test(test_subscription_valid_data_cpp FALSE)
-    endif()
 
     set(rmw_implementation1 "${rmw_implementation}")
     set(target_suffix1 "${target_suffix}")
