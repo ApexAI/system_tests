@@ -164,6 +164,8 @@ if(BUILD_TESTING AND (CMAKE_SYSTEM_NAME MATCHES Linux OR CMAKE_SYSTEM_NAME MATCH
       endif()
       list(APPEND TEST_MESSAGE_TYPES "${message_type}")
     endforeach()
+
+    ## pub/sub API tests
     configure_file(
       test/test_shm_publisher_subscriber.py.in
       test/test_shm_publisher_subscriber${suffix}.py.configured
@@ -246,6 +248,61 @@ if(BUILD_TESTING AND (CMAKE_SYSTEM_NAME MATCHES Linux OR CMAKE_SYSTEM_NAME MATCH
     endif()
 
 
+    ## network tests
+    configure_file(
+      test/test_network_publisher.py.in
+      test/test_network_publisher${suffix}.py.configured
+      @ONLY
+    )
+
+    configure_file(
+      test/test_network_subscriber.py.in
+      test/test_network_subscriber${suffix}.py.configured
+      @ONLY
+    )
+
+    file(GENERATE
+      OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/test/test_network_publisher${suffix}_$<CONFIG>.py"
+      INPUT "${CMAKE_CURRENT_BINARY_DIR}/test/test_network_publisher${suffix}.py.configured"
+    )
+
+    file(GENERATE
+      OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/test/test_network_subscriber${suffix}_$<CONFIG>.py"
+      INPUT "${CMAKE_CURRENT_BINARY_DIR}/test/test_network_subscriber${suffix}.py.configured"
+    )
+
+    list(LENGTH TEST_MESSAGE_TYPES length)
+    math(EXPR timeout "${length} * 15")
+
+    add_launch_test(
+      "${CMAKE_CURRENT_BINARY_DIR}/test/test_network_publisher${suffix}_$<CONFIG>.py"
+      TARGET test_network_publisher${suffix}
+      PYTHON_EXECUTABLE "${_PYTHON_EXECUTABLE}"
+      APPEND_LIBRARY_DIRS "${append_library_dirs}"
+      TIMEOUT ${timeout}
+      ${SKIP_TEST})
+    if(TEST test_network_publisher${suffix})
+      set_tests_properties(
+        test_network_publisher${suffix}
+        PROPERTIES DEPENDS "test_shm_publisher_cpp__${rmw_implementation1}"
+      )
+    endif()
+
+    add_launch_test(
+      "${CMAKE_CURRENT_BINARY_DIR}/test/test_network_subscriber${suffix}_$<CONFIG>.py"
+      TARGET test_network_subscriber${suffix}
+      PYTHON_EXECUTABLE "${_PYTHON_EXECUTABLE}"
+      APPEND_LIBRARY_DIRS "${append_library_dirs}"
+      TIMEOUT ${timeout}
+      ${SKIP_TEST})
+    if(TEST test_network_subscriber${suffix})
+      set_tests_properties(
+        test_network_subscriber${suffix}
+        PROPERTIES DEPENDS "test_shm_subscriber_cpp__${rmw_implementation2}"
+      )
+    endif()
+
+
   endmacro()
 
   macro(configure_template _client_library1 _client_library2)
@@ -312,6 +369,7 @@ if(BUILD_TESTING AND (CMAKE_SYSTEM_NAME MATCHES Linux OR CMAKE_SYSTEM_NAME MATCH
   target_include_directories(test_shm_serialized_subscriber_cpp PRIVATE
     include)
 
+  macro(targets)
     set(rmw_implementation1 "${rmw_implementation}")
     set(target_suffix1 "${target_suffix}")
 
