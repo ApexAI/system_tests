@@ -132,13 +132,13 @@ int main(int argc, char ** argv)
   } else if (message_type == "UnboundedString") {
     auto expected_messages = create_messages_unbounded_string();
     subscriber = subscribe<test_shared_memory_cyclonedds::msg::UnboundedString>(
-        node, message_type, qos_type, expected_messages,
-        received_messages_indicator);
+      node, message_type, qos_type, expected_messages,
+      received_messages_indicator);
   } else if (message_type == "BoundedString") {
     auto expected_messages = create_messages_bounded_string();
     subscriber = subscribe<test_shared_memory_cyclonedds::msg::BoundedString>(
-        node, message_type, qos_type, expected_messages,
-        received_messages_indicator);
+      node, message_type, qos_type, expected_messages,
+      received_messages_indicator);
   } else {
     fprintf(stderr, "Unknown message argument '%s'\n", message_type.c_str());
     rclcpp::shutdown();
