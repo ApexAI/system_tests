@@ -17,7 +17,8 @@ import unittest
 
 
 MESSAGE_TYPES = '@TEST_MESSAGE_TYPES@'.split(';')
-QOS_PROFILES = ['qos_default', 'qos_keepall_besteffort_transientlocal', 'qos_keeplast_reliable_transientlocal', 'qos_keeplast_besteffort_volatile']
+#QOS_PROFILES = ['qos_default', 'qos_keepall_besteffort_transientlocal', 'qos_keeplast_reliable_transientlocal', 'qos_keeplast_besteffort_volatile']
+QOS_PROFILES = ['qos_default']
 TEST_PARAMS = itertools.product(MESSAGE_TYPES, QOS_PROFILES)
 
 # QoS Parameters for the tests: (see https://docs.ros.org/en/galactic/Concepts/About-Quality-of-Service-Settings.html)
