@@ -64,8 +64,8 @@ if(BUILD_TESTING AND (CMAKE_SYSTEM_NAME MATCHES Linux OR CMAKE_SYSTEM_NAME MATCH
   # shm needed
   function(custom_executable target)
     add_executable(${target} ${ARGN})
-    rosidl_target_interfaces(${target}
-      ${PROJECT_NAME} "rosidl_typesupport_cpp")
+    rosidl_get_typesupport_target(cpp_typesupport_target "${PROJECT_NAME}" "rosidl_typesupport_cpp")
+    target_link_libraries(${target} "${cpp_typesupport_target}")
     ament_target_dependencies(${target}
       "rclcpp"
       "rclcpp_action"
@@ -252,7 +252,7 @@ if(BUILD_TESTING AND (CMAKE_SYSTEM_NAME MATCHES Linux OR CMAKE_SYSTEM_NAME MATCH
     endif()
 
 
-  else(NETWORK_TESTING)
+  else() # NOT NETWORK_TESTING
     ## network tests
     configure_file(
       test/test_network_publisher.py.in
@@ -306,7 +306,7 @@ if(BUILD_TESTING AND (CMAKE_SYSTEM_NAME MATCHES Linux OR CMAKE_SYSTEM_NAME MATCH
         PROPERTIES DEPENDS "test_shm_subscriber_cpp__${rmw_implementation2}"
       )
     endif()
-  endif(NETWORK_TESTING)
+  endif() # NOT NETWORK_TESTING
 
 
 

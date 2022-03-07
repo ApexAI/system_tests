@@ -98,7 +98,7 @@ int main(int argc, char ** argv)
       create_messages_dynamic_array());
   } else if (message_type == "FixedNested") {
     publish<test_shared_memory_cyclonedds::msg::FixedNested>(
-      node, message_type,
+      node, message_type, qos_type,
       create_messages_fixed_nested());
   } else if (message_type == "UnboundedString") {
     publish<test_shared_memory_cyclonedds::msg::UnboundedString>(
